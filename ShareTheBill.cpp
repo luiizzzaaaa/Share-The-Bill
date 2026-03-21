@@ -50,6 +50,8 @@ public:
     }
 
     User(const User& other ) : idUser(++noUsers) { //copy constr
+
+        this->noPayments = other.noPayments;
         this->name = new char[strlen(other.name) + 1];
         strcpy(this->name, other.name);
 
@@ -62,7 +64,7 @@ public:
         else {
             this->PayHistory = nullptr;
         }
-        this->noPayments = other.noPayments;
+
     }
 
     User& operator=(const User& other ) {
@@ -75,6 +77,7 @@ public:
         if (other.name != nullptr) {
             this->name = new char[strlen(other.name) + 1];
             strcpy(this->name, other.name);
+        }
             if (other.noPayments > 0 && other. PayHistory != nullptr) {
                 this->PayHistory = new float[other.noPayments];
                 for (int i = 0; i < other.noPayments; i++) {
@@ -86,7 +89,7 @@ public:
             }
 
             return *this;
-        }
+
     }
 
 //destructor
@@ -163,12 +166,12 @@ public:
 
     Product() {
         this->name = nullptr;
-        this->category = 'N/A';
+        this->category = 'N';
         this->price = 0.0;
         this->isShared = false;
     }
 
-    Product( char* name, char category, double price, bool isShared ) {
+    Product( const char* name, char category, double price, bool isShared ) {
         this->name = new char[strlen(name) + 1];
         strcpy(this->name, name);
         this->category = category;
@@ -220,6 +223,82 @@ public:
     bool getIsShared() const {
         return this->isShared;
     }
+
+    void setIsShared(bool statusShared) {
+        this->isShared = statusShared;
+    }
+
+    const char* getName() const {
+        return this->name;
+    }
+
+
+    double SplitThePrice( int noOfPeople ) const {
+        if (noOfPeople <= 0) {
+            return 0.0;
+        }
+
+        if ( this->isShared == true) {
+            return this->price / noOfPeople;
+        }
+        else {
+            return this->price;
+        }
+    }
+
+    double getPriceInCurrency( const char* currency ) const {
+        if ( currency == nullptr ) {
+            return this->price;
+        }
+
+        if ( strcmp( currency, "USD" ) == 0 ) {
+            return this->price / 4.60;
+        }
+        else if ( strcmp( currency, "EUR" ) == 0 ) {
+            return this->price / 4.97;
+        }
+        else if ( strcmp( currency, "GBP" ) == 0 ) {
+            return this->price / 5.80;
+        }
+
+        return this->price;
+    }
+
+
+    friend ostream& operator<<(ostream& out, const Product& product) {
+        out<<"Product Name:"<<product.name<<endl;
+        out<<"Product Category:"<<product.category<<endl;
+        out<<"Product Price:"<<product.price<<" Ron\n"<<endl;
+        out<<"Product IsShared:"<<product.isShared<<endl;
+
+        return out;
+    }
+
+    friend istream& operator>>(istream& in, Product& product) {
+        cout << "What is the product name : ";
+        char buff[256];
+        in.getline(buff,256);
+
+        product.freeMemory();
+        product.name = new char[strlen(buff) + 1];
+        strcpy(product.name,buff);
+
+        cout << "Enter category (F stands for food, D stand for Drink) : ";
+        in >> product.category;
+
+        cout << "Enter price : ";
+        in >> product.price;
+
+        cout << "Is it shared? (1 for yes, 0 for no) :";
+        in >> product.isShared;
+
+        return in;
+    }
+
+
+
+
+
 
 
 };
