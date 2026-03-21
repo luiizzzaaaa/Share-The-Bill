@@ -232,6 +232,10 @@ public:
         return this->name;
     }
 
+    char getCategory() const {
+        return this->category;
+    }
+
 
     double SplitThePrice( int noOfPeople ) const {
         if (noOfPeople <= 0) {
@@ -277,6 +281,7 @@ public:
     friend istream& operator>>(istream& in, Product& product) {
         cout << "What is the product name : ";
         char buff[256];
+        in >> ws;
         in.getline(buff,256);
 
         product.freeMemory();
@@ -294,15 +299,203 @@ public:
 
         return in;
     }
-
-
-
-
-
-
-
 };
+
+class Bill {
+
+    private:
+        long billId;
+        Product* itemsOrdered;
+        int noItems;
+        double tip;
+
+        void freeMemory() {
+            if (this->itemsOrdered != nullptr) {
+                delete[] this->itemsOrdered;
+                this->itemsOrdered = nullptr;
+            }
+        }
+
+    public:
+        Bill() {
+            this->itemsOrdered = nullptr;
+            this->noItems = 0;
+            this->tip = 0.0;
+            this->billId = 0;
+        }
+
+        Bill(long id, const Product* items, int count, double tip) {
+            this->billId = id;
+            this->noItems = count;
+            this->tip = tip;
+
+            if ( items != nullptr && count > 0 ) {
+                this->itemsOrdered = new Product[count];
+                for ( int i = 0; i < count; i++ ) {
+                    this->itemsOrdered[i] = items[i];
+                }
+            }
+            else {
+                this->itemsOrdered = nullptr;
+            }
+        }
+
+        Bill(const Bill& other) {
+            this->billId = other.billId;
+            this->noItems = other.noItems;
+            this->tip = other.tip;
+
+            if ( other.itemsOrdered != nullptr && other.noItems > 0 ) {
+                this->itemsOrdered = new Product[other.noItems];
+                for ( int i = 0; i < other.noItems; i++ ) {
+                    this->itemsOrdered[i] = other.itemsOrdered[i];
+                }
+            }
+            else {
+                this->itemsOrdered = nullptr;
+            }
+        }
+
+        Bill& operator=(const Bill& other) {
+            if (this == &other) {
+                return *this;
+            }
+
+            freeMemory();
+
+            this->billId = other.billId;
+            this->noItems = other.noItems;
+            this->tip = other.tip;
+
+            if ( other.itemsOrdered != nullptr && other.noItems > 0 ) {
+                this->itemsOrdered = new Product[other.noItems];
+                for ( int i = 0; i < other.noItems; i++ ) {
+                    this->itemsOrdered[i] = other.itemsOrdered[i];
+                }
+            }
+            else {
+                this->itemsOrdered = nullptr;
+            }
+
+            return *this;
+        }
+
+        ~Bill() {
+            freeMemory();
+        }
+
+        void HappyHourDrinks() {
+            bool used = false;
+            for ( int i = 0; i < noItems; i++ ) {
+                if ( this->itemsOrdered[i].getCategory() == 'D') {
+                    double oldPrice = this->itemsOrdered[i].getPrice();
+                    this->itemsOrdered[i].setPrice(oldPrice * 0.80);
+                    used = true;
+                }
+            }
+
+            if (used == true) {
+                cout << "Happy Hour is activated for the drinks!";
+            }
+            else {
+                cout << "No drinks on the bill";
+            }
+        }
+
+
+        void DiscountRoulette() {
+            if ( this->noItems == 0 ) {
+                cout << "Order something";
+            }
+
+            cout << "Press ENTER for the spin wheel ";
+            cin.ignore();
+            cin.get();
+
+            srand(time(0)); // initializarea generatorului de numere random
+            int chance = rand() % 100 + 1;
+
+            if ( chance <= 15 ) {
+                cout << "You won 20% discount";
+                for ( int i = 1; i <= noItems; i++ ) {
+                    this->itemsOrdered[i].setPrice(this->itemsOrdered[i].getPrice() * 0.80);
+                }
+            }
+            else if (chance <= 45) {
+                cout << "You wan 10% discount";
+                for (int i = 1; i <= noItems; i++ ) {
+                    this->itemsOrdered[i].setPrice(this->itemsOrdered[i].getPrice() * 0.80);
+                }
+            }
+            else {
+                cout << " You didn't win any discount";
+            }
+
+        }
+
+        double CalculateTotal() const {
+            double sum = 0.0;
+            for ( int i = 0; i <= noItems; i++ ) {
+                sum += this->itemsOrdered[i].getPrice();
+            }
+
+            double total = sum + ( sum * (this->tip/100.0));
+            return total;
+        }
+
+        friend ostream& operator<<(ostream& out, const Bill& b) {
+            out << "\n Receipt id #" << b.billId<<endl;
+            if ( b.itemsOrdered != nullptr && b.noItems > 0) {
+                for ( int i = 0; i < b.noItems; i++ ) {
+                    out << b.itemsOrdered[i] << endl;
+                }
+            }
+            else {
+                out << "No items on the bill";
+            }
+            out << "Tip: " << b.tip <<"%"<< endl;
+            out << " TOTAL:" << b.CalculateTotal() << "RON"<<endl;
+
+            return out;
+        }
+
+        friend istream& operator>>(istream& in, Bill& b) {
+            cout << "Create a new Bill" << endl;
+            cout << " Bill Id: #";
+            in >> b.billId;
+
+            cout << " How many items ?";
+            in >> b.noItems;
+
+            b.freeMemory();
+
+            if ( b.noItems > 0 ) {
+                b.itemsOrdered = new Product[b.noItems];
+                for ( int i = 0; i < b.noItems; i++ ) {
+                    cout << "\n Product " <<i+1 << ":";
+                    in >> b.itemsOrdered[i];
+                }
+            }
+            else {
+                b.itemsOrdered = nullptr;
+            }
+
+            cout << " Tip percentage: ";
+            in >> b.tip;
+
+            return in;
+        }
+
+    };
+
+
+
+
+
+
 
 int main() {
 
+
+    return 0;
 }
