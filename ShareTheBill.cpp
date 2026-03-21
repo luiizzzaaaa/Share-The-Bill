@@ -92,6 +92,30 @@ public:
 
     }
 
+    bool VIPstat() const {
+        if ( this->noPayments == 0 || this->PayHistory == nullptr ) {
+            cout << " Client is not VIP";
+            return false;
+        }
+
+        double sum = 0;
+        for ( int i = 0; i < this->noPayments; i++ ) {
+            sum += this->PayHistory[i];
+        }
+
+        double average = sum / this->noPayments;
+
+        if ( average >= 150.0) {
+            cout << " Client is VIP";
+            return true;
+        }
+        else {
+            cout << " Client is not VIP";
+            return false;
+        }
+    }
+
+
 //destructor
     ~User() {
         freeMemory();
@@ -433,6 +457,8 @@ class Bill {
 
         }
 
+
+
         double CalculateTotal() const {
             double sum = 0.0;
             for ( int i = 0; i <= noItems; i++ ) {
@@ -488,6 +514,175 @@ class Bill {
 
     };
 
+
+class Restaurant {
+
+private:
+    char* name;
+    char rating;
+    bool isOpen;
+    Bill* billHistory;
+    int noBills;
+
+    void freeMemory() {
+        if ( this->name != nullptr ) {
+            delete[] this->name;
+            this->name = nullptr;
+        }
+        if (this-> billHistory != nullptr ) {
+            delete[] this->billHistory;
+            this->billHistory = nullptr;
+        }
+    }
+
+public:
+    Restaurant() {
+        this->name = nullptr;
+        this->rating = 'N';
+        this->isOpen = false;
+        this->billHistory = nullptr;
+        this->noBills = 0;
+    }
+
+    Restaurant ( const char* name, char rating, bool isOpen, const Bill* history, int count ) {
+        if (name!= nullptr) {
+            this->name = new char[strlen(name)+1];
+            strcpy(this->name, name);
+        }
+        else {
+            this->name = nullptr;
+        }
+        this->rating = rating;
+        this->isOpen = isOpen;
+        this->noBills = count;
+
+        if (history != nullptr && count >0) {
+            this->billHistory = new Bill[count];
+            for ( int i = 0; i < count; i++ ) {
+                this->billHistory[i] = history[i];
+            }
+        }
+        else {
+            this->billHistory = nullptr;
+        }
+    }
+
+    Restaurant(const Restaurant& other) {
+        this-> rating = other.rating;
+        this->isOpen = other.isOpen;
+        this->noBills = other.noBills;
+
+        if (other.name != nullptr) {
+            this->name = new char[strlen(other.name)+1];
+            strcpy(this->name, other.name);
+
+        }
+        else {
+            this->name = nullptr;
+        }
+
+        if (other.billHistory != nullptr && other.noBills > 0) {
+            this->billHistory = new Bill[other.noBills];
+            for ( int i = 0; i < other.noBills; i++ ) {
+                this->billHistory[i] = other.billHistory[i];
+            }
+        }
+        else {
+            this->billHistory = nullptr;
+        }
+    }
+
+
+    Restaurant& operator= (const Restaurant& other) {
+        if (this != &other) {
+            return *this;
+        }
+
+        freeMemory();
+
+        this->rating = other.rating;
+        this->isOpen = other.isOpen;
+        this->noBills = other.noBills;
+
+        if (other.name != nullptr) {
+            this->name = new char[strlen(other.name)+1];
+            strcpy(this->name, other.name);
+        }
+        else {
+            this->name = nullptr;
+        }
+
+        if (other.billHistory != nullptr && other.noBills > 0) {
+            this->billHistory = new Bill[other.noBills];
+            for ( int i = 0; i < other.noBills; i++ ) {
+                this->billHistory[i] = other.billHistory[i];
+            }
+        }
+        else {
+            this->billHistory = nullptr;
+        }
+
+        return *this;
+    }
+
+    ~Restaurant() {
+        freeMemory();
+    }
+
+    void FinancialReport() const {
+        cout << " Financial Report:" << endl;
+
+        if (this->noBills > 0 || this->billHistory != nullptr) {
+            cout << "No bills in the records"<<endl;
+            return;
+        }
+
+        double total = 0;
+        for ( int i = 0; i < this->noBills; i++ ) {
+            double billTotal = this->billHistory[i].CalculateTotal();
+            total += billTotal;
+            cout << " The bill no."<< i + 1 << "brought:" << billTotal <<"Ron"<< endl;
+        }
+
+        cout << "Total Revenue :" << total << endl;
+    }
+
+    friend ostream& operator<< (ostream& out, const Restaurant& r) {
+        out << "Info: "<<endl;
+        out << "name: " << r.name << endl;
+        out << "rating: " << r.rating << endl;
+        out << "Status: " << r.isOpen << endl;
+        out << "Total Bills: " << r.noBills << endl;
+
+        return out;
+    }
+
+    friend istream& operator>> (istream& in, Restaurant& r) {
+        cout << "Info for new restaurant: "<<endl;
+        cout << "Restaurant name:" << endl;
+        char buff[256];
+        in >> ws;
+        in.getline(buff,256);
+
+        r.freeMemory();
+        r.name = new char[strlen(buff)+1];
+        strcpy(r.name, buff);
+
+        cout << "Rating (A, B, C) :";
+        in >> r.rating;
+
+        cout << " Is it still open? ( 1 for yes, 0 for no)"<< endl;
+        in >> r.isOpen;
+
+        r.billHistory = nullptr;
+        r.noBills = 0;
+
+        return in;
+
+    }
+
+
+};
 
 
 
