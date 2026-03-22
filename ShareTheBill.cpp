@@ -444,7 +444,7 @@ class Bill {
 
             if ( chance <= 15 ) {
                 cout << "You won 20% discount";
-                for ( int i = 1; i <= noItems; i++ ) {
+                for ( int i = 0; i < noItems; i++ ) {
                     this->itemsOrdered[i].setPrice(this->itemsOrdered[i].getPrice() * 0.80);
                 }
             }
@@ -475,7 +475,7 @@ class Bill {
                 int currentIndex = 0;
 
                 for ( int i = 0; i < this->noItems; i++ ) {
-                    mergeBill.itemsOrdered[i] = this->itemsOrdered[currentIndex];
+                    mergeBill.itemsOrdered[currentIndex] = this->itemsOrdered[i];
                     currentIndex++;
                 }
 
@@ -1127,7 +1127,9 @@ public:
                     break;
                 case 4 :
                     restaurantMenu();
-                default : cout << " Invalid option"<<endl;
+                default :
+                    cout << " Invalid option"<<endl;
+                    break;
 
 
 
