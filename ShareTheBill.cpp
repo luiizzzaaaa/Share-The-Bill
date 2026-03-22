@@ -143,6 +143,7 @@ public:
     friend istream& operator>>(istream& in, User& user) {
         cout << "What is the person's name : ";
         char buff[256];
+        in >> ws;
         in.getline(buff,256);
         user.freeMemory();
         user.name = new char[strlen(buff) + 1];
@@ -153,6 +154,8 @@ public:
 
         if (user.noPayments > 0 ) {
             user.PayHistory = new float[user.noPayments];
+
+            cout << "What is the person's History of Payments : ";
             for (int i = 0; i < user.noPayments; i++) {
                 in >> user.PayHistory[i];
             }
@@ -458,6 +461,38 @@ class Bill {
         }
 
 
+        Bill operator+( const Bill& other) const {
+            Bill mergeBill;
+
+            mergeBill.billId = this->billId + other.billId;
+            mergeBill.noItems = this->noItems + other.noItems;
+            mergeBill.tip = this->tip + other.tip;
+
+            if ( mergeBill.noItems > 0 ) {
+                mergeBill.itemsOrdered = new Product[mergeBill.noItems];
+
+
+                int currentIndex = 0;
+
+                for ( int i = 0; i < this->noItems; i++ ) {
+                    mergeBill.itemsOrdered[i] = this->itemsOrdered[currentIndex];
+                    currentIndex++;
+                }
+
+                for ( int i = 0; i < other.noItems; i++ ) {
+                    mergeBill.itemsOrdered[currentIndex] = other.itemsOrdered[i];
+                    currentIndex++;
+                }
+
+            }
+
+            cout << " Succes" << endl;
+            return mergeBill;
+
+        }
+
+
+
 
         double CalculateTotal() const {
             double sum = 0.0;
@@ -468,6 +503,10 @@ class Bill {
             double total = sum + ( sum * (this->tip/100.0));
             return total;
         }
+
+
+
+
 
         friend ostream& operator<<(ostream& out, const Bill& b) {
             out << "\n Receipt id #" << b.billId<<endl;
@@ -697,6 +736,8 @@ private:
     Bill** bills;
     int noBills;
 
+    Restaurant* restaurant;
+
     void printUser() const {
         if ( noUsers == 0) {
             cout << " No users registered \n";
@@ -739,7 +780,10 @@ private:
         cout << "Pick user index or pick <<-1>> to cancel: ";
         int index;
         cin >> index;
+
+        if ( index == -1 ) return -1;
         if ( index < 0 || index >= noUsers ) return -1;
+
         return index;
     }
 
@@ -783,9 +827,313 @@ public:
         noProducts = 0;
         bills = nullptr;
         noBills = 0;
+        restaurant = new Restaurant();
     }
 
-    
+    ~Menu() {
+        // eliberarea memoriei pt fiecare obiect in parte
+        for ( int i = 0; i < noUsers; i++ ) delete users[i];
+        delete[] users;
+
+        for ( int i = 0; i < noProducts; i++ ) delete products[i];
+        delete[] products;
+
+        for ( int i = 0; i < noBills; i++ ) delete bills[i];
+        delete[] bills;
+
+        delete restaurant;
+
+    }
+
+
+    void usersMenu() {
+
+        while ( true ) {
+            cout << " Users Menu:" << endl;
+            cout << "0 - Back"<<endl;
+            cout << "1 - Create User"<<endl;
+            cout << "2 - List Users" << endl;
+            cout << "3 - Edit User" << endl;
+            cout << "4 - Remove User" << endl;
+            cout << "5 - Check VIP status" << endl;
+            cout << "Option:" ;
+
+            int option;
+            cin >> option;
+
+            switch (option) {
+                case 0:
+                    return;
+                case 1: {
+                    User* u = new User();
+                    cin >> *u;
+                    User** temp = new User*[noUsers + 1];
+                    for ( int i = 0; i < noUsers; i++ ) temp[i] = users[i];
+                    temp[noUsers] = u;
+                    delete[] users;
+                    users = temp;
+                    noUsers++;
+                    cout << " Users created" << endl;
+                    break;
+                }
+                case 2: {
+                    printUser();
+                    break;
+                }
+                case 3: {
+                    int index = pickUser();
+                    if ( index == -1 ) break;
+                    cin >> *users[index];
+                    cout << " User updated"<< endl;
+                    break;
+                    }
+                case 4: {
+                    int index = pickUser();
+                    if (index == -1) break;
+                    delete users[index];
+                    for ( int i = 0; i < noUsers - 1; i++ ) users[i] = users[i + 1];
+                    noUsers--;
+                    cout << " User removed" << endl;
+                    break;
+
+                }
+                case 5: {
+                    int index = pickUser();
+                    if ( index == -1 ) break;
+                    users[index] -> VIPstat();
+                    cout << endl;
+                    break;
+                }
+                default : cout << " Invalid option"<<endl;
+
+                }
+
+            }
+        }
+
+    void productsMenu() {
+        while (true) {
+            cout << " Product Menu:" << endl;
+            cout << "0 - Back"<<endl;
+            cout << "1 - Create Product" << endl;
+            cout << "2 - List Product" << endl;
+            cout << "3 - Edit Product" << endl;
+            cout << "4 - Remove Product" << endl;
+            cout << "5 - Convert price"<< endl;
+            cout << "Option:" ;
+
+            int option;
+            cin >> option;
+
+            switch (option) {
+                case 0:
+                    return;
+                case 1: {
+                    Product* product = new Product();
+                    cin >> *product;
+                    Product** temp = new Product*[noProducts + 1];
+                    for ( int i = 0; i < noProducts; i++ ) temp[i] = products[i];
+                    temp[noProducts] = product;
+                    delete[] products;
+                    products = temp;
+                    noProducts++;
+                    cout << " Product created" << endl;
+                    break;
+                    }
+                case 2: {
+                    printProduct();
+                    break;
+                }
+                case 3: {
+                    int index = pickProduct();
+                    if ( index == -1 ) break;
+                    cin >> *products[index];
+                    cout << " Product updated" << endl;
+                    break;
+                }
+                case 4: {
+                    int index = pickProduct();
+                    if ( index == -1) break;
+                    delete products[index];
+                    for ( int i = 0; i < noProducts - 1; i++ ) products[i] = products[i + 1];
+                    noProducts--;
+                    cout << " Product removed" << endl;
+                    break;
+                }
+                case 5: {
+                    int index = pickProduct();
+                    if ( index == -1 ) break;
+                    cout << " Price in EUR: " << products[index]->getPriceInCurrency("EUR") << " EUR" <<endl;
+                    break;
+                }
+                default : cout << " Invalid option"<<endl;
+            }
+        }
+    }
+
+    void billsMenu() {
+        while (true) {
+            cout << " Bill Menu:" << endl;
+            cout << "0 - Back"<<endl;
+            cout << "1 - Create Bill" << endl;
+            cout << "2 - List Bill" << endl;
+            cout << "3 - Apply Happy Hour for drinks" << endl;
+            cout << "4 - Play discount roulette" << endl;
+            cout << "5 - combine two bills" << endl;
+            cout << "Option:" ;
+
+            int option;
+            cin >> option;
+
+            switch (option) {
+                case 0:
+                    return;
+                case 1: {
+                    Bill* bill = new Bill();
+                    cin >> *bill;
+                    Bill** temp = new Bill*[noBills + 1];
+                    for ( int i = 0; i < noBills; i++ ) temp[i] = bills[i];
+                    temp[noBills] = bill;
+                    delete[] bills;
+                    bills = temp;
+                    noBills++;
+                    cout << " Bill created" << endl;
+                    break;
+                }
+                case 2: {
+                    printBill();
+                    break;
+                }
+                case 3: {
+                    int index = pickBill();
+                    if ( index == -1 ) break;
+                    bills[index] -> HappyHourDrinks();
+                    cout << endl;
+                    break;
+                }
+                case 4: {
+                    int index = pickBill();
+                    if ( index == -1) break;
+                    bills[index] -> DiscountRoulette();
+                    cout << endl;
+                    break;
+                }
+                case 5: {
+                    cout << " Select First bill: "<<endl;
+                    int idx1 = pickBill();
+                    if ( idx1 == -1 ) break;
+                    cout << " Select second bill: "<<endl;
+                    int idx2 = pickBill();
+                    if ( idx2 == -1 || idx1 == idx2 ) {
+                        cout << "Invalid second bill" << endl;
+                        break;
+                    }
+
+                    Bill* mergeBill = new Bill(*bills[idx1] + *bills[idx2]);
+
+                    Bill** temp = new Bill*[noBills + 1];
+                    for ( int i = 0; i < noBills; i++ ) temp[i] = bills[i];
+                    temp[noBills] = mergeBill;
+
+                    delete[] bills;
+                    bills = temp;
+                    noBills++;
+
+                    cout << " Bills merged successfully" << endl;
+                    break;
+
+                }
+
+                default : cout << " Invalid option"<<endl;
+            }
+        }
+    }
+
+
+    void restaurantMenu() {
+        while (true) {
+            cout << " Restaurant Menu:" << endl;
+            cout << "0 - Back" << endl;
+            cout << "1 - Setup / Edit restaurant Details" << endl;
+            cout << "2 - View Restaurant Details"<<endl;
+            cout << "3 - Generate Financial Report"<<endl;
+            cout << "Options: ";
+
+            int option;
+            cin >> option;
+
+            switch (option) {
+                case 0:
+                    return;
+                case 1: {
+                    cin >> *restaurant;
+                    cout << " Restaurant setup complete"<< endl;
+                    break;
+
+                }
+                case 2 : {
+                    cout << *restaurant;
+                    break;
+                }
+                case 3 : {
+                    if (noBills == 0 ) {
+                        cout << " No bills" << endl;
+                        break;
+                    }
+
+                    Bill* tempA = new Bill[noBills];
+                    for ( int i = 0; i < noBills; i++ ) tempA[i] = *(bills[i]);
+
+                    Restaurant tempRest( "Synced Data", 'A', true, tempA, noBills );
+
+                    tempRest.FinancialReport();
+                    delete[] tempA;
+
+                    break;
+                }
+            }
+        }
+    }
+
+
+
+
+    void run() {
+
+        while (true) {
+            cout << " MAIN MENU :" << endl;
+            cout << "0 - Exit" << endl;
+            cout << "1 - Manage Users" << endl;
+            cout << "2 - Manage Products" << endl;
+            cout << "3 - Manage Bills" << endl;
+            cout << "4 - Restaurant Setting" << endl;
+            cout << " Pick an option: ";
+
+            int option;
+            cin >> option;
+
+            switch (option) {
+                case 0:
+                    cout << " Exiting.."<< endl;
+                    return;
+                case 1:
+                    usersMenu();
+                    break;
+                case 2 :
+                    productsMenu();
+                    break;
+                case 3 :
+                    billsMenu();
+                    break;
+                case 4 :
+                    restaurantMenu();
+                default : cout << " Invalid option"<<endl;
+
+
+
+            }
+        }
+    }
 
 
 };
@@ -794,6 +1142,9 @@ public:
 
 
 int main() {
+
+    Menu appMenu;
+    appMenu.run();
 
 
     return 0;
