@@ -447,7 +447,7 @@ class Bill {
             }
             else if (chance <= 45) {
                 cout << "You wan 10% discount";
-                for (int i = 1; i <= noItems; i++ ) {
+                for (int i = 0; i < noItems; i++ ) {
                     this->itemsOrdered[i].setPrice(this->itemsOrdered[i].getPrice() * 0.80);
                 }
             }
@@ -461,7 +461,7 @@ class Bill {
 
         double CalculateTotal() const {
             double sum = 0.0;
-            for ( int i = 0; i <= noItems; i++ ) {
+            for ( int i = 0; i < noItems; i++ ) {
                 sum += this->itemsOrdered[i].getPrice();
             }
 
@@ -594,7 +594,7 @@ public:
 
 
     Restaurant& operator= (const Restaurant& other) {
-        if (this != &other) {
+        if (this == &other) {
             return *this;
         }
 
@@ -632,7 +632,7 @@ public:
     void FinancialReport() const {
         cout << " Financial Report:" << endl;
 
-        if (this->noBills > 0 || this->billHistory != nullptr) {
+        if (this->noBills == 0 || this->billHistory == nullptr) {
             cout << "No bills in the records"<<endl;
             return;
         }
@@ -685,6 +685,110 @@ public:
 };
 
 
+class Menu {
+
+private:
+    User** users;
+    int noUsers;
+
+    Product** products;
+    int noProducts;
+
+    Bill** bills;
+    int noBills;
+
+    void printUser() const {
+        if ( noUsers == 0) {
+            cout << " No users registered \n";
+            return;
+        }
+        for ( int i = 0; i < noUsers; i++ ) {
+            cout << i << ". " << *users[i] << endl;
+        }
+    }
+
+    void printProduct() const {
+        if ( noProducts == 0) {
+            cout << " No products registered \n";
+            return;
+        }
+
+        for ( int i = 0; i < noProducts; i++ ) {
+            cout << i << ". " << *products[i] << endl;
+        }
+    }
+
+    void printBill() const {
+        if ( noBills == 0) {
+            cout << " No bills registered \n";
+            return;
+        }
+
+        for ( int i = 0; i < noBills; i++ ) {
+            cout << i << ". " << *bills[i] << endl;
+        }
+    }
+
+    int pickUser() const {
+        if ( noUsers == 0) {
+            cout << " No users registered \n";
+            return -1;
+        }
+
+        printUser();
+        cout << "Pick user index or pick <<-1>> to cancel: ";
+        int index;
+        cin >> index;
+        if ( index < 0 || index >= noUsers ) return -1;
+        return index;
+    }
+
+
+    int pickProduct() const {
+        if ( noProducts == 0) {
+            cout << " No products available \n";
+            return -1;
+        }
+        printProduct();
+        cout << " Pick a product's index or pick <<-1>> to cancel: ";
+        int index;
+        cin >> index;
+        if ( index < 0 || index >= noProducts ) return -1;
+        return index;
+
+    }
+
+
+    int pickBill() const {
+        if ( noBills == 0) {
+            cout << " No bills registered \n";
+            return -1;
+        }
+
+        printBill();
+        cout << " Pick a bill's index or pick <<-1>> to cancel: ";
+        int index;
+        cin >> index;
+        if ( index < 0 || index >= noBills ) return -1;
+        return index;
+    }
+
+public:
+
+    Menu() {
+
+        users = nullptr;
+        noUsers = 0;
+        products = nullptr;
+        noProducts = 0;
+        bills = nullptr;
+        noBills = 0;
+    }
+
+    
+
+
+};
 
 
 
